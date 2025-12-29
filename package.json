@@ -1,0 +1,56 @@
+{
+  "name": "bashcodeshift",
+  "version": "0.1.0",
+  "description": "A jscodeshift-like toolkit for bash script transformations",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "bin": {
+    "bashcodeshift": "dist/bin/bashcodeshift.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "docs": "typedoc src/index.ts",
+    "start": "node dist/bin/bashcodeshift.js",
+    "clean": "rimraf dist",
+    "prebuild": "npm run clean"
+  },
+  "keywords": [
+    "bash",
+    "codemod",
+    "transform",
+    "ast",
+    "shell",
+    "script",
+    "codeshift"
+  ],
+  "author": "David Coleman <david_coleman_007@hotmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "commander": "^11.0.0",
+    "glob": "^10.3.0",
+    "chalk": "^5.2.0",
+    "@isdk/bash-parser": "^1.0.0",
+    "fs-extra": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/fs-extra": "^11.0.0",
+    "@types/jest": "^29.5.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.42.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.0.0",
+    "typedoc": "^0.25.0",
+    "rimraf": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
