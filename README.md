@@ -3,6 +3,10 @@
 A toolkit for bash script transformations, built with TypeScript on top of 
 bash-traverse to provide a jscodeshift-style API for bash script transformations.
 
+**IMPORTANT**
+Status: Experimental. Designed for real-world bash transformation, but not yet stable 
+enough to treat as a drop-in engine for production refactors.
+
 ## Features
 
 - **jscodeshift-like API**: Familiar API for writing transforms, similar to jscodeshift
