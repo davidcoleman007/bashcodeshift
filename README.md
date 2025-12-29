@@ -1,6 +1,7 @@
 # BashCodeshift
 
-A jscodeshift-like toolkit for bash script transformations, built with TypeScript and powered by @isdk/bash-parser.
+A toolkit for bash script transformations, built with TypeScript on top of 
+bash-traverse to provide a jscodeshift-style API for bash script transformations.
 
 ## Features
 
