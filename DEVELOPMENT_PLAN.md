@@ -4,80 +4,86 @@
 
 This document outlines the development plan for creating a bash codemod tool similar to jscodeshift. The tool will allow you to write JavaScript-based transforms to automatically update bash scripts across multiple repositories.
 
+**Architecture**: BashCodeshift follows the same pattern as jscodeshift, which delegates AST traversal to babel/traverse. Similarly, bashcodeshift delegates parsing and traversal to the `bash-traverse` library, which provides comprehensive bash parsing, AST generation, and traversal capabilities. This separation of concerns allows bashcodeshift to focus on providing the jscodeshift-like API and transformation utilities.
+
 ## Current Status
 
 ✅ **Phase 1 Complete**: Core Infrastructure
 - Basic project structure created
 - Package.json with dependencies
-- Core parser using tree-sitter-bash
-- Transformer with jscodeshift-like API
+- Core parser integration with @isdk/bash-parser
+- Transformer with jscodeshift-like API (`b()` function)
 - CLI runner with file processing
 - Utility functions for common operations
 - Example transforms created
 - Test framework implemented
+- Basic AST node constructors (Command, Variable, Conditional, Loop, Function, Pipeline, Redirect, Subshell, Comment)
+- Collection methods (find, filter, forEach, map, size)
+- Node manipulation methods (replace, insertBefore, insertAfter, remove, prune)
+- Basic source code generation (toSource)
 
 ## Implementation Phases
 
 ### Phase 1: Core Infrastructure ✅
-**Duration**: 1-2 weeks
 **Status**: Complete
 
 - [x] Set up project structure
-- [x] Implement basic bash parser using tree-sitter-bash
-- [x] Create AST manipulation utilities
+- [x] Integrate with @isdk/bash-parser for parsing
+- [x] Create jscodeshift-like API (`b()` function)
 - [x] Build CLI interface
 - [x] Add basic error handling
 - [x] Create example transforms
 - [x] Implement testing framework
+- [x] Basic AST node constructors
+- [x] Collection methods (find, filter, forEach, map, size)
+- [x] Node manipulation methods (replace, insertBefore, insertAfter, remove, prune)
+- [x] Basic source code generation
 
-### Phase 2: Enhanced Parser & AST (Next)
-**Duration**: 1-2 weeks
+### Phase 2: Integration with bash-traverse (In Progress)
+**Priority**: High
+**Status**: Architecture Decision Made
+
+**Note**: Traversal is delegated to `bash-traverse`, following the pattern of `babel/traverse` vs `jscodeshift`. This separation allows bashcodeshift to focus on the transformation API while bash-traverse handles the heavy lifting of parsing, AST generation, and traversal.
+
+- [ ] Integrate bash-traverse for parsing (replacing @isdk/bash-parser)
+- [ ] Integrate bash-traverse for AST traversal (replacing custom walkAST implementation)
+- [ ] Use bash-traverse's generate() for source code generation
+- [ ] Update transformer to use bash-traverse's NodePath API
+- [ ] Leverage bash-traverse's comprehensive bash syntax support:
+  - [x] Basic commands and pipelines (via bash-traverse)
+  - [x] Control structures: if/then/else, for, while, until, case (via bash-traverse)
+  - [x] Variable assignment and expansion (via bash-traverse)
+  - [x] Line continuations (via bash-traverse)
+  - [x] Heredocs and here-strings (via bash-traverse)
+  - [x] Command substitution `$(command)` and backticks (via bash-traverse)
+  - [x] Test expressions `[ ... ]` and `[[ ... ]]` (via bash-traverse)
+  - [x] Function definitions (via bash-traverse)
+  - [x] Comments and shebangs (via bash-traverse)
+  - [x] Round-trip fidelity (via bash-traverse)
+- [ ] Preserve comments and formatting through bash-traverse
+- [ ] Leverage source location tracking from bash-traverse
+
+### Phase 3: Enhanced Transformation API
 **Priority**: High
 
-- [ ] Improve tree-sitter AST to jscodeshift AST conversion
-- [ ] Add support for more bash constructs:
-  - [ ] Subshells `$(command)`
-  - [ ] Command substitution `` `command` ``
-  - [ ] Here documents `<<EOF`
-  - [ ] Process substitution `<()`
-  - [ ] Arithmetic expansion `$((expression))`
-  - [ ] Parameter expansion `${var}`
-- [ ] Handle complex bash syntax:
-  - [ ] Arrays
-  - [ ] Associative arrays
-  - [ ] Functions with parameters
-  - [ ] Case statements
-  - [ ] Select statements
-- [ ] Preserve comments and formatting
-- [ ] Add source location tracking
-
-### Phase 3: Advanced Transformation Engine
-**Duration**: 2-3 weeks
-**Priority**: High
-
-- [ ] Implement proper AST traversal
-- [ ] Add node transformation capabilities:
-  - [ ] Node replacement
-  - [ ] Node insertion (before/after)
-  - [ ] Node removal
-  - [ ] Node wrapping
-- [ ] Create source code generation from AST
-- [ ] Add support for:
-  - [ ] Multi-line commands
-  - [ ] Heredocs
-  - [ ] Complex conditionals
-  - [ ] Nested structures
-- [ ] Implement source map support
+- [x] Node transformation capabilities (via bash-traverse NodePath):
+  - [x] Node replacement (replaceWith)
+  - [x] Node insertion (insertBefore, insertAfter)
+  - [x] Node removal (remove)
+- [ ] Enhanced node wrapping utilities
+- [x] Source code generation from AST (via bash-traverse generate)
+- [ ] Improve source code generation options and formatting control
 - [ ] Add transformation validation
+- [ ] Add transformation statistics and reporting
 
 ### Phase 4: Enhanced API & Utilities
-**Duration**: 1-2 weeks
 **Priority**: Medium
 
-- [ ] Expand jscodeshift-like API:
-  - [ ] Collection methods (filter, map, forEach)
-  - [ ] Node constructors for all bash types
-  - [ ] Path manipulation utilities
+- [x] Core jscodeshift-like API:
+  - [x] Collection methods (filter, map, forEach, size)
+  - [x] Basic node constructors (Command, Variable, Conditional, Loop, Function, Pipeline, Redirect, Subshell, Comment)
+- [ ] Expand node constructors to match all bash-traverse node types
+- [ ] Enhanced path manipulation utilities
 - [ ] Add utility functions:
   - [ ] Command validation
   - [ ] Argument parsing
@@ -85,9 +91,9 @@ This document outlines the development plan for creating a bash codemod tool sim
   - [ ] Dependency detection
 - [ ] Create helper functions for common patterns
 - [ ] Add transformation templates
+- [ ] Integrate with bash-traverse plugin system
 
 ### Phase 5: CLI & User Experience
-**Duration**: 1 week
 **Priority**: Medium
 
 - [ ] Enhance CLI features:
@@ -104,7 +110,6 @@ This document outlines the development plan for creating a bash codemod tool sim
 - [ ] Add verbose/debug modes
 
 ### Phase 6: Testing & Documentation
-**Duration**: 1-2 weeks
 **Priority**: Medium
 
 - [ ] Comprehensive test suite:
@@ -136,19 +141,23 @@ This document outlines the development plan for creating a bash codemod tool sim
 
 ### 1. Bash Parsing Complexity
 **Challenge**: Bash has complex syntax that's difficult to parse correctly.
-**Solution**: Use tree-sitter-bash for robust parsing, with fallback to regex for edge cases.
+**Solution**: Delegate parsing to `bash-traverse`, which provides comprehensive bash parsing with full syntax coverage including control structures, expansions, heredocs, and more.
 
-### 2. AST to Source Code Generation
-**Challenge**: Reconstructing bash code from AST while preserving formatting.
-**Solution**: Implement a sophisticated code generator that maintains original formatting where possible.
+### 2. AST Traversal
+**Challenge**: Implementing robust AST traversal that handles all bash constructs correctly.
+**Solution**: Delegate traversal to `bash-traverse`, which provides a babel/traverse-like API with NodePath objects for safe AST manipulation. This follows the same pattern as jscodeshift delegating to babel/traverse.
 
-### 3. Command Context Understanding
+### 3. AST to Source Code Generation
+**Challenge**: Reconstructing bash code from AST while preserving formatting and round-trip fidelity.
+**Solution**: Use `bash-traverse`'s `generate()` function, which provides sophisticated code generation with full structural fidelity and formatting preservation.
+
+### 4. Command Context Understanding
 **Challenge**: Understanding the context of commands (e.g., whether a git command is in a CI environment).
-**Solution**: Add context analysis capabilities and multi-file awareness.
+**Solution**: Add context analysis capabilities and multi-file awareness in bashcodeshift layer.
 
-### 4. Transformation Safety
+### 5. Transformation Safety
 **Challenge**: Ensuring transformations don't break existing scripts.
-**Solution**: Add validation, dry-run mode, and comprehensive testing.
+**Solution**: Add validation, dry-run mode, and comprehensive testing. Leverage bash-traverse's round-trip testing capabilities.
 
 ## Getting Started
 
@@ -226,14 +235,40 @@ bashcodeshift -t transforms/update-ci-scripts.js "**/*.sh"
 
 ## Next Steps
 
-1. **Immediate**: Test the current implementation with real bash scripts
-2. **Short-term**: Improve the parser to handle more bash constructs
-3. **Medium-term**: Add more example transforms and documentation
-4. **Long-term**: Build a community around the tool
+1. **Immediate**: Integrate bash-traverse for parsing and traversal
+2. **Short-term**: Replace custom walkAST implementation with bash-traverse's traverse API
+3. **Short-term**: Replace custom source generation with bash-traverse's generate function
+4. **Medium-term**: Expand node constructors to match all bash-traverse node types
+5. **Medium-term**: Add more example transforms and documentation
+6. **Long-term**: Build a community around the tool
+
+## Architecture
+
+### Component Separation
+
+BashCodeshift follows a layered architecture similar to jscodeshift:
+
+1. **bash-traverse** (lower layer): Provides parsing, AST generation, traversal, and code generation
+   - Similar to `@babel/parser` and `@babel/traverse` in the JavaScript ecosystem
+   - Handles all bash syntax complexity
+   - Provides NodePath API for AST manipulation
+   - Ensures round-trip fidelity
+
+2. **bashcodeshift** (upper layer): Provides jscodeshift-like transformation API
+   - Similar to `jscodeshift` in the JavaScript ecosystem
+   - Focuses on developer-friendly transformation utilities
+   - Provides collection methods and node constructors
+   - Handles file processing and CLI interface
+
+This separation allows:
+- bash-traverse to evolve independently with better parsing/traversal
+- bashcodeshift to focus on transformation ergonomics
+- Both projects to be used independently if needed
 
 ## Resources
 
 - [jscodeshift Documentation](https://github.com/facebook/jscodeshift)
-- [tree-sitter-bash](https://github.com/tree-sitter/tree-sitter-bash)
+- [bash-traverse](https://github.com/your-org/bash-traverse) - Parser and traversal library
+- [@isdk/bash-parser](https://github.com/isdk/bash-parser) - Current parser (to be replaced by bash-traverse)
 - [Bash Reference Manual](https://www.gnu.org/software/bash/manual/)
 - [Shell Scripting Best Practices](https://google.github.io/styleguide/shellguide.html)
